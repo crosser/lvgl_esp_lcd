@@ -136,15 +136,15 @@ static void gui_task(void *pvParameter)
 	// ESP_ERROR_CHECK(esp_lcd_panel_invert_color(panel_handle, true));
 	// Rotate 90 degrees clockwise:
 	ESP_ERROR_CHECK(esp_lcd_panel_swap_xy(panel_handle, true));
-	ESP_ERROR_CHECK(esp_lcd_panel_mirror(panel_handle, true, true));
+	ESP_ERROR_CHECK(esp_lcd_panel_mirror(panel_handle, true, false));
 	ESP_LOGI(TAG, "Turn on backlight");
 	ESP_ERROR_CHECK(gpio_set_level(CONFIG_HWE_DISPLAY_PWR,
 				CONFIG_HWE_DISPLAY_PWR_ON_LEVEL));
 	// panel_handle is ready, now deal with lvgl
 	lv_init();
 	// H and W exchanged because it lies on its side after rotation
-	lv_display_t *disp = lv_display_create(CONFIG_HWE_DISPLAY_HEIGHT,
-			CONFIG_HWE_DISPLAY_WIDTH);
+	lv_display_t *disp = lv_display_create(CONFIG_HWE_DISPLAY_WIDTH,
+			CONFIG_HWE_DISPLAY_HEIGHT);
 	ESP_ERROR_CHECK(esp_lcd_panel_io_register_event_callbacks(
 		io_handle,
 		&(esp_lcd_panel_io_callbacks_t) {
