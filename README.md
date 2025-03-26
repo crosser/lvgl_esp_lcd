@@ -9,6 +9,8 @@
 * This driver only works when controller is connected over 3-Wire SPI,
   and does not use DC pin ("16 bit transfer mode"), and tested only
   against LilyGO T-Display-S3-AMOLED dev module.
+  * @electronicsguy [reports](https://github.com/crosser/lvgl_esp_lcd/issues/1)
+    that the this code works with Waveshare ESP32-S3-AMOLED-1.91 without change.
 
 Why?
 
