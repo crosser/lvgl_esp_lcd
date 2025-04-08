@@ -180,15 +180,30 @@ static void gui_task(void *pvParameter)
 	ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer,
 		LV_TICK_PERIOD_MS * 1000));
 
+	ESP_ERROR_CHECK(gpio_config(&(gpio_config_t) {
+				.intr_type = GPIO_INTR_NEGEDGE,
+				.mode = GPIO_MODE_INPUT,
+				.pin_bit_mask = 1ULL<<CONFIG_HWE_BUTTON_1,
+				.pull_down_en = GPIO_PULLDOWN_DISABLE,
+				.pull_up_en = GPIO_PULLUP_ENABLE,
+			}));
+	ESP_ERROR_CHECK(gpio_install_isr_service(0));
+	ESP_ERROR_CHECK(gpio_isr_handler_add(CONFIG_HWE_BUTTON_1, poweroff,
+				NULL));
+
 	ESP_LOGI(TAG, "Display LVGL Scroll Text");
 	example_lvgl_demo_ui(disp);
-	while (stop_request < 10) {
+	while (stop_request < 1) {
 		vTaskDelay(pdMS_TO_TICKS(10));
 		if (pdTRUE == xSemaphoreTake(xGuiSemaphore, portMAX_DELAY)) {
 			lv_task_handler();
 			xSemaphoreGive(xGuiSemaphore);
 		}
-		ESP_LOGI(TAG, "stop request = %d", stop_request);
+		/*
+		ESP_LOGI(TAG, "stop request = %d, level = %d",
+				stop_request,
+				gpio_get_level(CONFIG_HWE_BUTTON_1));
+		*/
 	}
 	ESP_LOGI(TAG, "Shutting down");
 	ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, false));
@@ -202,14 +217,5 @@ void app_main(void)
 	ESP_LOGI(TAG, "Launching gui task");
 	/* Pinned to core 1. Core 0 will run bluetooth/wifi jobs. */
 	xTaskCreatePinnedToCore(gui_task, "gui", 4096*2, NULL, 0, NULL, 1);
-	ESP_ERROR_CHECK(gpio_config(&(gpio_config_t) {
-				.intr_type = GPIO_INTR_NEGEDGE,
-				.pin_bit_mask = 1ULL<<CONFIG_HWE_BUTTON_1,
-				.mode = GPIO_MODE_INPUT,
-				.pull_up_en = 1,
-			}));
-	ESP_ERROR_CHECK(gpio_install_isr_service(0));
-	ESP_ERROR_CHECK(gpio_isr_handler_add(CONFIG_HWE_BUTTON_1, poweroff,
-				NULL));
 	ESP_LOGI(TAG, "Initialization complete");
 }
